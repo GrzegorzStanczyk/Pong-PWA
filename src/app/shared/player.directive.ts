@@ -1,22 +1,28 @@
-import { Directive, ElementRef, AfterViewInit, NgZone } from '@angular/core';
-import { MouseMoveService } from '../core/mouse-move.service';
+import { Directive, ElementRef, AfterViewInit, OnDestroy, NgZone } from '@angular/core';
+import { MouseMoveService, MouserCords } from '../core/mouse-move.service';
+import { Subscription } from 'rxjs';
 
 @Directive({
   selector: '[appPlayer]'
 })
-export class PlayerDirective implements AfterViewInit {
-  private canvasEl: HTMLCanvasElement;
-  private ctx: CanvasRenderingContext2D;
-  private paddle;
-  private animationFrame;
+export class PlayerDirective implements AfterViewInit, OnDestroy {
+  private canvasEl: HTMLCanvasElement = this.el.nativeElement;
+  private ctx: CanvasRenderingContext2D = this.canvasEl.getContext('2d');
+  private subscriptions: Subscription = new Subscription();
 
   constructor(
     private el: ElementRef,
     private ngZone: NgZone,
     private mouseMove: MouseMoveService) {
-    this.canvasEl = this.el.nativeElement;
-    this.ctx = this.canvasEl.getContext('2d');
-    this.mouseMove.mouseMove$.subscribe(cords => console.log('cords', cords));
+    this.subscriptions.add(this.mouseMove.mouseMove$
+      .subscribe(cords => {
+        this.ngZone.runOutsideAngular(() => {
+          requestAnimationFrame(() => {
+            this.loop(cords);
+          });
+        });
+      })
+    );
   }
 
   private setCanvasSize() {
@@ -28,25 +34,33 @@ export class PlayerDirective implements AfterViewInit {
     this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
   }
 
-  private drawPaddle() {
+  private drawPaddle(cords: MouserCords) {
     this.ctx.beginPath();
-    this.ctx.lineWidth = 5;
+    this.ctx.lineWidth = 50;
     this.ctx.strokeStyle = 'red';
-    this.ctx.rect(0, 0, 25, 200);
+    let y = cords.y - 100;
+    if (y < 0) {
+      y = 0;
+    }
+    if (cords.y + 100 > window.innerHeight) {
+      y = window.innerHeight - 200;
+    }
+    this.ctx.rect(0, y, 0, 200);
     this.ctx.stroke();
   }
 
-  private loop() {
-    // this.clearCanvas();
-    this.drawPaddle();
-    this.animationFrame = requestAnimationFrame(() => this.loop());
+  private loop(cords: MouserCords) {
+    this.clearCanvas();
+    this.drawPaddle(cords);
   }
 
   ngAfterViewInit() {
-    console.log('this.canvasEl: ', this.canvasEl);
-    
     this.setCanvasSize();
-    this.ngZone.runOutsideAngular(() => this.loop());
+    this.drawPaddle({ y: window.innerHeight / 2 - 100 });
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
 }

@@ -4,9 +4,8 @@ import { Subject, Observable } from 'rxjs';
 import { EventManager } from '@angular/platform-browser';
 
 export interface MouserCords {
-  x: number;
   y: number;
-};
+}
 
 @Injectable({
   providedIn: CoreModule
@@ -24,6 +23,6 @@ export class MouseMoveService {
   }
 
   private onMouseMove(event: MouseEvent) {
-    this.mouseMoveSubject.next({ x: event.clientX, y: event.clientX });
+    this.mouseMoveSubject.next({ y: event.clientY });
   }
 }
