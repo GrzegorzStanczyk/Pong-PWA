@@ -18,9 +18,7 @@ export class GameDirective implements AfterViewInit, OnDestroy {
     this.subscriptions.add(this.physics.physics$
       .subscribe(data => {
         this.ngZone.runOutsideAngular(() => {
-          requestAnimationFrame(() => {
-            this.animationFrame = this.loop(data);
-          });
+          this.animationFrame = requestAnimationFrame(this.loop.bind(this, data));
         });
       })
     );
