@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PlayerDirective } from './player.directive';
+import { GameDirective } from './game.directive';
 
 @NgModule({
   imports: [
     CommonModule
   ],
   declarations: [
-    PlayerDirective
+    GameDirective
   ],
   exports: [
-    PlayerDirective
+    GameDirective
   ]
 })
 export class SharedModule { }

@@ -1,24 +1,25 @@
 import { Directive, ElementRef, AfterViewInit, OnDestroy, NgZone } from '@angular/core';
-import { MouseMoveService, MouserCords } from '../core/mouse-move.service';
 import { Subscription } from 'rxjs';
+import { PhysicsService, Physics, PaddleCords } from '../core/physics.service';
 
 @Directive({
-  selector: '[appPlayer]'
+  selector: '[appGame]'
 })
-export class PlayerDirective implements AfterViewInit, OnDestroy {
+export class GameDirective implements AfterViewInit, OnDestroy {
   private canvasEl: HTMLCanvasElement = this.el.nativeElement;
   private ctx: CanvasRenderingContext2D = this.canvasEl.getContext('2d');
   private subscriptions: Subscription = new Subscription();
+  private animationFrame: any;
 
   constructor(
     private el: ElementRef,
     private ngZone: NgZone,
-    private mouseMove: MouseMoveService) {
-    this.subscriptions.add(this.mouseMove.mouseMove$
-      .subscribe(cords => {
+    private physics: PhysicsService) {
+    this.subscriptions.add(this.physics.physics$
+      .subscribe(data => {
         this.ngZone.runOutsideAngular(() => {
           requestAnimationFrame(() => {
-            this.loop(cords);
+            this.animationFrame = this.loop(data);
           });
         });
       })
@@ -34,33 +35,29 @@ export class PlayerDirective implements AfterViewInit, OnDestroy {
     this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
   }
 
-  private drawPaddle(cords: MouserCords) {
+  private drawPaddle(cords: PaddleCords) {
     this.ctx.beginPath();
-    this.ctx.lineWidth = 50;
     this.ctx.strokeStyle = 'red';
-    let y = cords.y - 100;
-    if (y < 0) {
-      y = 0;
-    }
-    if (cords.y + 100 > window.innerHeight) {
-      y = window.innerHeight - 200;
-    }
-    this.ctx.rect(0, y, 0, 200);
+    this.ctx.rect(cords.x, cords.y, cords.width, cords.height);
     this.ctx.stroke();
   }
 
-  private loop(cords: MouserCords) {
+  private loop(data: Physics) {
     this.clearCanvas();
-    this.drawPaddle(cords);
+    // User paddle
+    this.drawPaddle(data.userPaddle);
+    // Enemy paddle
+    this.drawPaddle(data.enemyPaddle);
   }
 
   ngAfterViewInit() {
     this.setCanvasSize();
-    this.drawPaddle({ y: window.innerHeight / 2 - 100 });
+    this.drawPaddle({ x: 0, y: window.innerHeight / 2 - 100, width: 40, height: 200 });
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
+    cancelAnimationFrame(this.animationFrame);
   }
 
 }
