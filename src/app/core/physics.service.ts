@@ -45,6 +45,9 @@ export class PhysicsService {
     half: 0
   };
 
+  userPaddle: PaddleCords;
+  enemyPaddle: PaddleCords;
+
   ball: Ball = {
     x: 100,
     y: 100,
@@ -66,33 +69,33 @@ export class PhysicsService {
           if (cords.y + this.paddleSize.half > window.innerHeight) {
             y = window.innerHeight - this.paddleSize.height;
           }
-          const userPaddle = {
+          this.userPaddle = {
             x: 0,
             y,
             width: 40,
             height: 200
           };
-          const enemyPaddle = {
+          this.enemyPaddle = {
             x: window.innerWidth - 40,
             y: this.ball.y - this.paddleSize.half,
             width: 40,
             height: 200
           };
-          this.ballMove(userPaddle, enemyPaddle);
-          return { userPaddle, enemyPaddle, ball: this.ball };
+          this.ballMove();
+          return { userPaddle: this.userPaddle, enemyPaddle: this.enemyPaddle, ball: this.ball };
         })
       );
     }
 
-    ballMove(userPaddle, enemyPaddle) {
+    ballMove() {
       // right wall
       if (this.ball.x + this.ball.r >= window.innerWidth - this.paddleSize.width
-        && (this.ball.y >= enemyPaddle.y && this.ball.y <= enemyPaddle.y + this.paddleSize.height)) {
+        && (this.ball.y >= this.enemyPaddle.y && this.ball.y <= this.enemyPaddle.y + this.paddleSize.height)) {
           this.ball.xSpeed = this.ball.xSpeed * -1;
       }
       // left wall
       if (this.ball.x - this.ball.r <= this.paddleSize.width
-        && (this.ball.y >= userPaddle.y && this.ball.y <= userPaddle.y + this.paddleSize.height)) {
+        && (this.ball.y >= this.userPaddle.y && this.ball.y <= this.userPaddle.y + this.paddleSize.height)) {
           this.ball.xSpeed = this.ball.xSpeed * -1;
       }
       // if left board
