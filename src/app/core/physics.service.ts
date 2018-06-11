@@ -46,11 +46,11 @@ export class PhysicsService {
   };
 
   ball: Ball = {
-    x: 20,
-    y: 20,
+    x: 100,
+    y: 100,
     r: 10,
-    xSpeed: 2,
-    ySpeed: 2
+    xSpeed: 5,
+    ySpeed: 5
   };
 
   constructor(
@@ -66,7 +66,6 @@ export class PhysicsService {
           if (cords.y + this.paddleSize.half > window.innerHeight) {
             y = window.innerHeight - this.paddleSize.height;
           }
-          this.ballMove();
           const userPaddle = {
             x: 0,
             y,
@@ -75,25 +74,39 @@ export class PhysicsService {
           };
           const enemyPaddle = {
             x: window.innerWidth - 40,
-            y,
+            y: this.ball.y - this.paddleSize.half,
             width: 40,
             height: 200
           };
-          const paddlePosition = {
-            x1: userPaddle.x,
-            x2: userPaddle.width,
-            y1: userPaddle.y,
-            y2: userPaddle.y + this.paddleSize.height
-          };
+          this.ballMove(userPaddle, enemyPaddle);
           return { userPaddle, enemyPaddle, ball: this.ball };
         })
       );
     }
 
-    ballMove() {
-      if (this.ball.x + this.ball.r >= window.innerWidth || this.ball.x - this.ball.r <= 0) {
-        this.ball.xSpeed = this.ball.xSpeed * -1;
+    ballMove(userPaddle, enemyPaddle) {
+      // right wall
+      if (this.ball.x + this.ball.r >= window.innerWidth - this.paddleSize.width
+        && (this.ball.y >= enemyPaddle.y && this.ball.y <= enemyPaddle.y + this.paddleSize.height)) {
+          this.ball.xSpeed = this.ball.xSpeed * -1;
       }
+      // left wall
+      if (this.ball.x - this.ball.r <= this.paddleSize.width
+        && (this.ball.y >= userPaddle.y && this.ball.y <= userPaddle.y + this.paddleSize.height)) {
+          this.ball.xSpeed = this.ball.xSpeed * -1;
+      }
+      // if left board
+      if (this.ball.x + this.ball.r >= window.innerWidth
+        || this.ball.x - this.ball.r <= 0) {
+        this.ball = {
+          x: 100,
+          y: 100,
+          r: 10,
+          xSpeed: 5,
+          ySpeed: 5
+        };
+      }
+      // bounce from up and bottom
       if (this.ball.y + this.ball.r >= window.innerHeight || this.ball.y - this.ball.r <= 0) {
         this.ball.ySpeed = this.ball.ySpeed * -1;
       }
