@@ -1,6 +1,6 @@
 import { Directive, ElementRef, AfterViewInit, OnDestroy, NgZone } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { PhysicsService, Physics, PaddleCords } from '../core/physics.service';
+import { PhysicsService, Physics, PaddleCords, Ball } from '../core/physics.service';
 
 @Directive({
   selector: '[appGame]'
@@ -40,8 +40,16 @@ export class GameDirective implements AfterViewInit, OnDestroy {
     this.ctx.stroke();
   }
 
+  private drawBall(ball: Ball) {
+    this.ctx.beginPath();
+    this.ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2, false);
+    this.ctx.fillStyle = 'red';
+    this.ctx.fill();
+  }
+
   private loop(data: Physics) {
     this.clearCanvas();
+    this.drawBall(data.ball);
     // User paddle
     this.drawPaddle(data.userPaddle);
     // Enemy paddle
