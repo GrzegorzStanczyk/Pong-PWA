@@ -71,34 +71,65 @@ export class PhysicsService {
           }
           this.userPaddle = {
             x: 0,
+            // y: window.innerHeight / 2,
             y,
             width: 40,
             height: 200
           };
           this.enemyPaddle = {
             x: window.innerWidth - 40,
+            // y: this.ball.y - this.paddleSize.half,
+            // y,
             y: this.ball.y - this.paddleSize.half,
             width: 40,
             height: 200
           };
+          // this.ballMove();
+          // this.ball = {
+          //   x: cords.x,
+          //   y: cords.y,
+          //   r: 10,
+          //   xSpeed: 5,
+          //   ySpeed: 5
+          // };
           this.ballMove();
+          this.collision();
           return { userPaddle: this.userPaddle, enemyPaddle: this.enemyPaddle, ball: this.ball };
         })
       );
     }
 
+    collision() {
+      const nearestX = Math.max(this.userPaddle.x, Math.min(this.ball.x, this.userPaddle.x + this.userPaddle.width));
+      const nearestY = Math.max(this.userPaddle.y, Math.min(this.ball.y, this.userPaddle.y + this.userPaddle.height));
+
+      const deltaX = Math.abs(this.ball.x - nearestX);
+      const deltaY = Math.abs(this.ball.y - nearestY);
+
+      const collision = Math.pow(deltaX, 2) + Math.pow(deltaY, 2) < Math.pow(this.ball.r, 2);
+      if (collision) {
+        console.log('collision: ', collision);
+        console.log('deltaY: ', deltaY);
+        console.log('deltaX: ', deltaX);
+        if (deltaX < deltaY) {
+          this.ball.ySpeed *= -1;
+          this.ball.y += this.ball.ySpeed ;
+        }  else if (deltaX > deltaY) {
+          this.ball.xSpeed *= -1;
+          this.ball.x += this.ball.xSpeed ;
+        }  else if (deltaX === deltaY) {
+          this.ball.ySpeed *= -1;
+          this.ball.xSpeed *= -1;
+          this.ball.x += this.ball.xSpeed ;
+          this.ball.y += this.ball.ySpeed ;
+        }
+      }
+    }
+
     ballMove() {
-      // right wall
-      if (this.ball.x + this.ball.r >= window.innerWidth - this.paddleSize.width
-        && (this.ball.y >= this.enemyPaddle.y && this.ball.y <= this.enemyPaddle.y + this.paddleSize.height)) {
-          this.ball.xSpeed = this.ball.xSpeed * -1;
+      if (this.ball.x + this.ball.r > this.enemyPaddle.x) {
+        this.ball.xSpeed = this.ball.xSpeed * -1;
       }
-      // left wall
-      if (this.ball.x - this.ball.r <= this.paddleSize.width
-        && (this.ball.y >= this.userPaddle.y && this.ball.y <= this.userPaddle.y + this.paddleSize.height)) {
-          this.ball.xSpeed = this.ball.xSpeed * -1;
-      }
-      // if left board
       if (this.ball.x + this.ball.r >= window.innerWidth
         || this.ball.x - this.ball.r <= 0) {
         this.ball = {
@@ -113,12 +144,7 @@ export class PhysicsService {
       if (this.ball.y + this.ball.r >= window.innerHeight || this.ball.y - this.ball.r <= 0) {
         this.ball.ySpeed = this.ball.ySpeed * -1;
       }
-      this.ball = {
-        x: this.ball.x + this.ball.xSpeed,
-        y: this.ball.y + this.ball.ySpeed,
-        r: 10,
-        xSpeed: this.ball.xSpeed,
-        ySpeed: this.ball.ySpeed
-      };
+      this.ball.x += this.ball.xSpeed;
+      this.ball.y += this.ball.ySpeed;
     }
 }
